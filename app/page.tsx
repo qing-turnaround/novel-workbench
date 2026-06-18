@@ -1,13 +1,21 @@
 import Link from "next/link";
-import db from "@/lib/db";
+import db, { getBookId } from "@/lib/db";
 
 export const dynamic = "force-dynamic";
 
-export default function Dashboard() {
-  const book = db.prepare("SELECT * FROM book LIMIT 1").get() as any;
-  if (!book) return <div className="text-gray-500">No book found. Run /novel-setup first.</div>;
+export default async function Dashboard({
+  searchParams,
+}: {
+  searchParams: Promise<Record<string, string | string[] | undefined>>;
+}) {
+  const params = await searchParams;
+  const bookId = getBookId(params);
+  if (!bookId) return <div className="text-gray-500">暂无小说项目。请先用 /novel-setup 创建。</div>;
 
-  const chapters = db.prepare("SELECT * FROM chapters ORDER BY chapter_number").all() as any[];
+  const book = db.prepare("SELECT * FROM book WHERE id = ?").get(bookId) as any;
+  if (!book) return <div className="text-gray-500">未找到该小说</div>;
+
+  const chapters = db.prepare("SELECT * FROM chapters WHERE book_id = ? ORDER BY chapter_number").all(bookId) as any[];
   const written = chapters.filter((c) => c.status !== "planned");
   const recent = written.slice(-5).reverse();
 
@@ -15,8 +23,8 @@ export default function Dashboard() {
     `SELECT COALESCE(SUM(chapters_written),0) as total_chapters,
             COALESCE(SUM(words_written),0) as total_words,
             COUNT(*) as writing_days
-     FROM writing_stats`
-  ).get() as any;
+     FROM writing_stats WHERE book_id = ?`
+  ).get(bookId) as any;
 
   return (
     <div className="space-y-6">
@@ -41,7 +49,7 @@ export default function Dashboard() {
             {recent.map((c: any) => (
               <li key={c.chapter_number}>
                 <Link
-                  href={`/chapters/${c.chapter_number}`}
+                  href={`/chapters/${c.chapter_number}?book=${bookId}`}
                   className="block rounded bg-gray-900 p-3 transition hover:bg-gray-800"
                 >
                   <span className="text-gray-400">第{c.chapter_number}章</span>{" "}

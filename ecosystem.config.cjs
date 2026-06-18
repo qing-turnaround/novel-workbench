@@ -7,7 +7,7 @@ module.exports = {
       cwd: "/home/qing/project/apps/novel-workbench",
       env: {
         NODE_ENV: "production",
-        NOVEL_DB_PATH: "/home/qing/project/novel/novel.db",
+        NOVEL_DB_PATH: "/home/qing/project/novels/novels.db",
         AUTH_PASSWORD: "euNATVhjprilRQ64DGMY",
       },
     },

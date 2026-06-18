@@ -1,7 +1,9 @@
 import type { Metadata } from "next";
-import Link from "next/link";
+import { Suspense } from "react";
 import "./globals.css";
 import NavLink from "./nav-link";
+import BookSelector from "./book-selector";
+import db from "@/lib/db";
 
 export const metadata: Metadata = {
   title: "Novel Workbench",
@@ -22,12 +24,17 @@ export default function RootLayout({
 }: {
   children: React.ReactNode;
 }) {
+  const books = db
+    .prepare("SELECT id, title, genre, status, dir_name FROM book ORDER BY updated_at DESC")
+    .all() as any[];
+
   return (
     <html lang="zh-CN">
       <body className="flex h-screen bg-gray-950 text-gray-100">
         <nav className="w-52 shrink-0 border-r border-gray-800 bg-gray-900 p-4">
-          <h1 className="mb-6 text-lg font-bold text-white">Novel Workbench</h1>
-          <ul className="space-y-1">
+          <h1 className="mb-4 text-lg font-bold text-white">Novel Workbench</h1>
+          <Suspense><BookSelector books={books} /></Suspense>
+          <ul className="mt-4 space-y-1">
             {links.map((l) => (
               <li key={l.href}>
                 <NavLink href={l.href}>{l.label}</NavLink>

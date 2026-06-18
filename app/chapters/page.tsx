@@ -1,14 +1,22 @@
 import Link from "next/link";
-import db from "@/lib/db";
+import db, { getBookId } from "@/lib/db";
 
 export const dynamic = "force-dynamic";
 
-export default function ChapterList() {
-  const chapters = db.prepare(
-    "SELECT id, chapter_number, title, volume_id, word_count, status FROM chapters ORDER BY chapter_number"
-  ).all() as any[];
+export default async function ChapterList({
+  searchParams,
+}: {
+  searchParams: Promise<Record<string, string | string[] | undefined>>;
+}) {
+  const params = await searchParams;
+  const bookId = getBookId(params);
+  if (!bookId) return <div className="text-gray-500">暂无小说项目</div>;
 
-  const volumes = db.prepare("SELECT * FROM volumes ORDER BY volume_number").all() as any[];
+  const chapters = db.prepare(
+    "SELECT id, chapter_number, title, volume_id, word_count, status FROM chapters WHERE book_id = ? ORDER BY chapter_number"
+  ).all(bookId) as any[];
+
+  const volumes = db.prepare("SELECT * FROM volumes WHERE book_id = ? ORDER BY volume_number").all(bookId) as any[];
 
   return (
     <div className="space-y-6">
@@ -26,16 +34,14 @@ export default function ChapterList() {
                 {volChapters.map((c: any) => (
                   <Link
                     key={c.chapter_number}
-                    href={`/chapters/${c.chapter_number}`}
+                    href={`/chapters/${c.chapter_number}?book=${bookId}`}
                     className={`flex items-center justify-between rounded px-4 py-2 text-sm transition ${
                       c.status === "planned"
                         ? "text-gray-600"
                         : "text-gray-300 hover:bg-gray-800"
                     }`}
                   >
-                    <span>
-                      第{c.chapter_number}章 {c.title || ""}
-                    </span>
+                    <span>第{c.chapter_number}章 {c.title || ""}</span>
                     <span className="flex gap-3 text-xs text-gray-500">
                       {c.word_count > 0 && <span>{c.word_count}字</span>}
                       <span>{c.status}</span>
@@ -51,7 +57,7 @@ export default function ChapterList() {
           {chapters.map((c: any) => (
             <Link
               key={c.chapter_number}
-              href={`/chapters/${c.chapter_number}`}
+              href={`/chapters/${c.chapter_number}?book=${bookId}`}
               className="flex items-center justify-between rounded px-4 py-2 text-sm text-gray-300 transition hover:bg-gray-800"
             >
               <span>第{c.chapter_number}章 {c.title || ""}</span>

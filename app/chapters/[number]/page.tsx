@@ -1,23 +1,27 @@
 import Link from "next/link";
-import db from "@/lib/db";
+import db, { getBookId } from "@/lib/db";
 import ChapterContent from "./chapter-content";
 
 export const dynamic = "force-dynamic";
 
 export default async function ChapterPage({
   params,
+  searchParams,
 }: {
   params: Promise<{ number: string }>;
+  searchParams: Promise<Record<string, string | string[] | undefined>>;
 }) {
   const { number } = await params;
+  const sp = await searchParams;
+  const bookId = getBookId(sp);
   const num = parseInt(number);
 
-  const chapter = db.prepare("SELECT * FROM chapters WHERE chapter_number = ?").get(num) as any;
-  if (!chapter) {
-    return <div className="text-gray-500">章节不存在</div>;
-  }
+  if (!bookId) return <div className="text-gray-500">暂无小说项目</div>;
 
-  const total = (db.prepare("SELECT MAX(chapter_number) as max FROM chapters").get() as any).max;
+  const chapter = db.prepare("SELECT * FROM chapters WHERE book_id = ? AND chapter_number = ?").get(bookId, num) as any;
+  if (!chapter) return <div className="text-gray-500">章节不存在</div>;
+
+  const total = (db.prepare("SELECT MAX(chapter_number) as max FROM chapters WHERE book_id = ?").get(bookId) as any).max;
 
   return (
     <div className="mx-auto max-w-3xl">
@@ -46,24 +50,15 @@ export default async function ChapterPage({
 
       <div className="mt-8 flex gap-4">
         {num > 1 && (
-          <Link
-            href={`/chapters/${num - 1}`}
-            className="rounded bg-gray-800 px-4 py-2 text-sm hover:bg-gray-700"
-          >
+          <Link href={`/chapters/${num - 1}?book=${bookId}`} className="rounded bg-gray-800 px-4 py-2 text-sm hover:bg-gray-700">
             上一章
           </Link>
         )}
-        <Link
-          href="/chapters"
-          className="rounded bg-gray-800 px-4 py-2 text-sm hover:bg-gray-700"
-        >
+        <Link href={`/chapters?book=${bookId}`} className="rounded bg-gray-800 px-4 py-2 text-sm hover:bg-gray-700">
           目录
         </Link>
         {num < total && (
-          <Link
-            href={`/chapters/${num + 1}`}
-            className="rounded bg-gray-800 px-4 py-2 text-sm hover:bg-gray-700"
-          >
+          <Link href={`/chapters/${num + 1}?book=${bookId}`} className="rounded bg-gray-800 px-4 py-2 text-sm hover:bg-gray-700">
             下一章
           </Link>
         )}
