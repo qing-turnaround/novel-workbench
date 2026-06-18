@@ -1,37 +1,27 @@
-import { useEffect, useState } from "react";
-import { api, type Character } from "../lib/api";
+"use client";
 
-export default function CharacterGraph() {
-  const [characters, setCharacters] = useState<Character[]>([]);
-  const [selected, setSelected] = useState<Character | null>(null);
-  const [states, setStates] = useState<any[]>([]);
-  const [appearances, setAppearances] = useState<any[]>([]);
-  const [error, setError] = useState("");
+import { useState } from "react";
 
-  useEffect(() => {
-    api.getCharacters().then(setCharacters).catch((e) => setError(e.message));
-  }, []);
+const roleColors: Record<string, string> = {
+  protagonist: "bg-blue-600",
+  antagonist: "bg-red-600",
+  supporting: "bg-green-600",
+  minor: "bg-gray-600",
+};
 
-  useEffect(() => {
-    if (selected) {
-      Promise.all([
-        api.getCharacterStates(selected.id),
-        api.getCharacterChapters(selected.id),
-      ]).then(([s, a]) => {
-        setStates(s);
-        setAppearances(a);
-      });
-    }
-  }, [selected]);
-
-  if (error) return <div className="text-red-400">Error: {error}</div>;
-
-  const roleColors: Record<string, string> = {
-    protagonist: "bg-blue-600",
-    antagonist: "bg-red-600",
-    supporting: "bg-green-600",
-    minor: "bg-gray-600",
-  };
+export default function CharacterDetail({
+  characters,
+  statesMap,
+  appearancesMap,
+}: {
+  characters: any[];
+  statesMap: Record<number, any[]>;
+  appearancesMap: Record<number, any[]>;
+}) {
+  const [selectedId, setSelectedId] = useState<number | null>(null);
+  const selected = characters.find((c) => c.id === selectedId);
+  const states = selectedId ? statesMap[selectedId] || [] : [];
+  const appearances = selectedId ? appearancesMap[selectedId] || [] : [];
 
   return (
     <div className="flex gap-6">
@@ -40,16 +30,14 @@ export default function CharacterGraph() {
         {characters.map((c) => (
           <button
             key={c.id}
-            onClick={() => setSelected(c)}
+            onClick={() => setSelectedId(c.id)}
             className={`flex w-full items-center gap-2 rounded px-3 py-2 text-left text-sm transition ${
-              selected?.id === c.id
+              selectedId === c.id
                 ? "bg-blue-600 text-white"
                 : "text-gray-300 hover:bg-gray-800"
             }`}
           >
-            <span
-              className={`inline-block h-2 w-2 rounded-full ${roleColors[c.role] || "bg-gray-500"}`}
-            />
+            <span className={`inline-block h-2 w-2 rounded-full ${roleColors[c.role] || "bg-gray-500"}`} />
             <span>{c.name}</span>
             <span className="ml-auto text-xs text-gray-500">{c.status}</span>
           </button>
@@ -100,13 +88,8 @@ export default function CharacterGraph() {
               {states.length > 0 ? (
                 <div className="space-y-2">
                   {states.map((s: any, i: number) => (
-                    <div
-                      key={i}
-                      className="flex gap-3 rounded bg-gray-900 p-3 text-sm"
-                    >
-                      <span className="shrink-0 text-gray-500">
-                        第{s.chapter_number}章
-                      </span>
+                    <div key={i} className="flex gap-3 rounded bg-gray-900 p-3 text-sm">
+                      <span className="shrink-0 text-gray-500">第{s.chapter_number}章</span>
                       <span className="shrink-0 rounded bg-gray-800 px-2 py-0.5 text-xs text-gray-400">
                         {s.change_type}
                       </span>

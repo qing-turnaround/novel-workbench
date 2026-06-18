@@ -1,44 +1,42 @@
-import { useEffect, useState } from "react";
-import { api, type Foreshadowing } from "../lib/api";
+"use client";
 
-export default function ForeshadowingBoard() {
-  const [items, setItems] = useState<Foreshadowing[]>([]);
-  const [filter, setFilter] = useState<string>("all");
-  const [error, setError] = useState("");
+import { useState } from "react";
 
-  useEffect(() => {
-    const status = filter === "all" ? undefined : filter;
-    api.getForeshadowing(status).then(setItems).catch((e) => setError(e.message));
-  }, [filter]);
+const priorityColors: Record<string, string> = {
+  urgent: "border-red-500 bg-red-950",
+  normal: "border-yellow-600 bg-yellow-950",
+  minor: "border-gray-600 bg-gray-900",
+};
 
-  if (error) return <div className="text-red-400">Error: {error}</div>;
+export default function ForeshadowingList({ items }: { items: any[] }) {
+  const [filter, setFilter] = useState("all");
 
+  const filtered = filter === "all" ? items : items.filter((i) => i.status === filter);
   const planted = items.filter((i) => i.status === "planted");
   const resolved = items.filter((i) => i.status === "resolved");
   const abandoned = items.filter((i) => i.status === "abandoned");
-
-  const priorityColors: Record<string, string> = {
-    urgent: "border-red-500 bg-red-950",
-    normal: "border-yellow-600 bg-yellow-950",
-    minor: "border-gray-600 bg-gray-900",
-  };
 
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <h2 className="text-xl font-bold">伏笔追踪</h2>
         <div className="flex gap-2">
-          {["all", "planted", "resolved", "abandoned"].map((f) => (
+          {[
+            { key: "all", label: "全部" },
+            { key: "planted", label: "未兑现" },
+            { key: "resolved", label: "已兑现" },
+            { key: "abandoned", label: "已放弃" },
+          ].map((f) => (
             <button
-              key={f}
-              onClick={() => setFilter(f)}
+              key={f.key}
+              onClick={() => setFilter(f.key)}
               className={`rounded px-3 py-1 text-sm ${
-                filter === f
+                filter === f.key
                   ? "bg-blue-600 text-white"
                   : "bg-gray-800 text-gray-400 hover:bg-gray-700"
               }`}
             >
-              {f === "all" ? "全部" : f === "planted" ? "未兑现" : f === "resolved" ? "已兑现" : "已放弃"}
+              {f.label}
             </button>
           ))}
         </div>
@@ -60,7 +58,7 @@ export default function ForeshadowingBoard() {
       </div>
 
       <div className="space-y-3">
-        {items.map((item) => (
+        {filtered.map((item) => (
           <div
             key={item.id}
             className={`rounded border-l-4 p-4 ${priorityColors[item.priority] || priorityColors.normal}`}
@@ -81,19 +79,13 @@ export default function ForeshadowingBoard() {
             </div>
             <div className="mt-2 flex gap-4 text-sm text-gray-400">
               <span>埋下：第{item.planted_chapter}章</span>
-              {item.resolved_chapter && (
-                <span>兑现：第{item.resolved_chapter}章</span>
-              )}
+              {item.resolved_chapter && <span>兑现：第{item.resolved_chapter}章</span>}
               <span>优先级：{item.priority}</span>
             </div>
-            {item.notes && (
-              <p className="mt-2 text-sm text-gray-500">{item.notes}</p>
-            )}
+            {item.notes && <p className="mt-2 text-sm text-gray-500">{item.notes}</p>}
           </div>
         ))}
-        {items.length === 0 && (
-          <p className="text-gray-500">暂无伏笔记录</p>
-        )}
+        {filtered.length === 0 && <p className="text-gray-500">暂无伏笔记录</p>}
       </div>
     </div>
   );

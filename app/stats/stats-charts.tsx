@@ -1,4 +1,6 @@
-import { useEffect, useState } from "react";
+"use client";
+
+import { useState } from "react";
 import {
   BarChart,
   Bar,
@@ -8,35 +10,32 @@ import {
   ResponsiveContainer,
   CartesianGrid,
 } from "recharts";
-import { api, type WritingStat, type StatTotals } from "../lib/api";
 
-export default function WritingStats() {
-  const [stats, setStats] = useState<WritingStat[]>([]);
-  const [totals, setTotals] = useState<StatTotals | null>(null);
-  const [range, setRange] = useState("30");
-  const [error, setError] = useState("");
+export default function StatsCharts({
+  stats,
+  totals,
+}: {
+  stats: any[];
+  totals: any;
+}) {
+  const [range, setRange] = useState(30);
 
-  useEffect(() => {
-    Promise.all([api.getStats(`${range}d`), api.getStatTotals()])
-      .then(([s, t]) => {
-        setStats(s);
-        setTotals(t);
-      })
-      .catch((e) => setError(e.message));
-  }, [range]);
+  const cutoff = new Date();
+  cutoff.setDate(cutoff.getDate() - range);
+  const cutoffStr = cutoff.toISOString().slice(0, 10);
+  const filtered = stats.filter((s) => s.date >= cutoffStr);
 
-  if (error) return <div className="text-red-400">Error: {error}</div>;
-
-  const avgWords = totals && totals.writing_days > 0
-    ? Math.round(totals.total_words / totals.writing_days)
-    : 0;
+  const avgWords =
+    totals.writing_days > 0
+      ? Math.round(totals.total_words / totals.writing_days)
+      : 0;
 
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <h2 className="text-xl font-bold">写作统计</h2>
         <div className="flex gap-2">
-          {["7", "30", "90"].map((r) => (
+          {[7, 30, 90].map((r) => (
             <button
               key={r}
               onClick={() => setRange(r)}
@@ -52,30 +51,26 @@ export default function WritingStats() {
         </div>
       </div>
 
-      {totals && (
-        <div className="grid grid-cols-3 gap-4">
-          <div className="rounded bg-gray-900 p-4 text-center">
-            <div className="text-2xl font-bold">
-              {totals.total_words.toLocaleString()}
-            </div>
-            <div className="text-sm text-gray-400">总字数</div>
-          </div>
-          <div className="rounded bg-gray-900 p-4 text-center">
-            <div className="text-2xl font-bold">{totals.writing_days}</div>
-            <div className="text-sm text-gray-400">写作天数</div>
-          </div>
-          <div className="rounded bg-gray-900 p-4 text-center">
-            <div className="text-2xl font-bold">{avgWords.toLocaleString()}</div>
-            <div className="text-sm text-gray-400">日均字数</div>
-          </div>
+      <div className="grid grid-cols-3 gap-4">
+        <div className="rounded bg-gray-900 p-4 text-center">
+          <div className="text-2xl font-bold">{totals.total_words.toLocaleString()}</div>
+          <div className="text-sm text-gray-400">总字数</div>
         </div>
-      )}
+        <div className="rounded bg-gray-900 p-4 text-center">
+          <div className="text-2xl font-bold">{totals.writing_days}</div>
+          <div className="text-sm text-gray-400">写作天数</div>
+        </div>
+        <div className="rounded bg-gray-900 p-4 text-center">
+          <div className="text-2xl font-bold">{avgWords.toLocaleString()}</div>
+          <div className="text-sm text-gray-400">日均字数</div>
+        </div>
+      </div>
 
       <div>
         <h3 className="mb-3 font-semibold">每日字数</h3>
-        {stats.length > 0 ? (
+        {filtered.length > 0 ? (
           <ResponsiveContainer width="100%" height={300}>
-            <BarChart data={stats}>
+            <BarChart data={filtered}>
               <CartesianGrid strokeDasharray="3 3" stroke="#374151" />
               <XAxis
                 dataKey="date"
@@ -101,9 +96,9 @@ export default function WritingStats() {
 
       <div>
         <h3 className="mb-3 font-semibold">每日章节</h3>
-        {stats.length > 0 ? (
+        {filtered.length > 0 ? (
           <ResponsiveContainer width="100%" height={200}>
-            <BarChart data={stats}>
+            <BarChart data={filtered}>
               <CartesianGrid strokeDasharray="3 3" stroke="#374151" />
               <XAxis
                 dataKey="date"
