@@ -30,11 +30,16 @@ export default function RootLayout({
 
   return (
     <html lang="zh-CN">
-      <body className="flex h-screen bg-gray-950 text-gray-100">
-        <nav className="w-52 shrink-0 border-r border-gray-800 bg-gray-900 p-4">
-          <h1 className="mb-4 text-lg font-bold text-white">Novel Workbench</h1>
+      <body>
+        <nav
+          className="fixed left-0 top-0 z-50 h-full w-48 overflow-y-auto border-r px-3 py-5"
+          style={{ backgroundColor: "var(--bg-sidebar)", borderColor: "var(--border-color)" }}
+        >
+          <h1 className="mb-4 px-2 text-base font-bold" style={{ color: "var(--text-primary)" }}>
+            Novel Workbench
+          </h1>
           <Suspense><BookSelector books={books} /></Suspense>
-          <ul className="mt-4 space-y-1">
+          <ul className="mt-3 space-y-0.5">
             {links.map((l) => (
               <li key={l.href}>
                 <NavLink href={l.href}>{l.label}</NavLink>
@@ -42,7 +47,7 @@ export default function RootLayout({
             ))}
           </ul>
         </nav>
-        <main className="flex-1 overflow-auto p-6">{children}</main>
+        <main className="ml-48 min-h-screen p-6">{children}</main>
       </body>
     </html>
   );

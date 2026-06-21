@@ -10,10 +10,10 @@ export default async function Dashboard({
 }) {
   const params = await searchParams;
   const bookId = getBookId(params);
-  if (!bookId) return <div className="text-gray-500">暂无小说项目。请先用 /novel-setup 创建。</div>;
+  if (!bookId) return <div style={{ color: "var(--text-muted)" }}>暂无小说项目。请先用 /novel-setup 创建。</div>;
 
   const book = db.prepare("SELECT * FROM book WHERE id = ?").get(bookId) as any;
-  if (!book) return <div className="text-gray-500">未找到该小说</div>;
+  if (!book) return <div style={{ color: "var(--text-muted)" }}>未找到该小说</div>;
 
   const chapters = db.prepare("SELECT * FROM chapters WHERE book_id = ? ORDER BY chapter_number").all(bookId) as any[];
   const written = chapters.filter((c) => c.status !== "planned");
@@ -29,9 +29,9 @@ export default async function Dashboard({
   return (
     <div className="space-y-6">
       <div>
-        <h2 className="text-2xl font-bold">{book.title}</h2>
-        <p className="text-gray-400">{book.genre} &middot; {book.status}</p>
-        {book.premise && <p className="mt-2 text-gray-300">{book.premise}</p>}
+        <h2 className="text-2xl font-bold" style={{ color: "var(--text-primary)" }}>{book.title}</h2>
+        <p style={{ color: "var(--text-secondary)" }}>{book.genre} &middot; {book.status}</p>
+        {book.premise && <p className="mt-2" style={{ color: "var(--text-secondary)" }}>{book.premise}</p>}
       </div>
 
       <div className="grid grid-cols-3 gap-4">
@@ -41,20 +41,21 @@ export default async function Dashboard({
       </div>
 
       <div>
-        <h3 className="mb-3 text-lg font-semibold">最近更新</h3>
+        <h3 className="mb-3 text-lg font-semibold" style={{ color: "var(--text-primary)" }}>最近更新</h3>
         {recent.length === 0 ? (
-          <p className="text-gray-500">还没有写过章节</p>
+          <p style={{ color: "var(--text-muted)" }}>还没有写过章节</p>
         ) : (
           <ul className="space-y-2">
             {recent.map((c: any) => (
               <li key={c.chapter_number}>
                 <Link
                   href={`/chapters/${c.chapter_number}?book=${bookId}`}
-                  className="block rounded bg-gray-900 p-3 transition hover:bg-gray-800"
+                  className="block rounded-lg border p-3 transition-colors"
+                  style={{ backgroundColor: "var(--bg-card)", borderColor: "var(--border-color)" }}
                 >
-                  <span className="text-gray-400">第{c.chapter_number}章</span>{" "}
-                  <span className="font-medium">{c.title || "无标题"}</span>
-                  <span className="ml-2 text-sm text-gray-500">{c.word_count}字</span>
+                  <span style={{ color: "var(--text-muted)" }}>第{c.chapter_number}章</span>{" "}
+                  <span className="font-medium" style={{ color: "var(--text-primary)" }}>{c.title || "无标题"}</span>
+                  <span className="ml-2 text-sm" style={{ color: "var(--text-muted)" }}>{c.word_count}字</span>
                 </Link>
               </li>
             ))}
@@ -67,9 +68,9 @@ export default async function Dashboard({
 
 function StatCard({ label, value }: { label: string; value: string }) {
   return (
-    <div className="rounded-lg bg-gray-900 p-4">
-      <div className="text-sm text-gray-400">{label}</div>
-      <div className="mt-1 text-2xl font-bold">{value}</div>
+    <div className="rounded-lg border p-4" style={{ backgroundColor: "var(--bg-card)", borderColor: "var(--border-color)" }}>
+      <div className="text-sm" style={{ color: "var(--text-muted)" }}>{label}</div>
+      <div className="mt-1 text-2xl font-bold" style={{ color: "var(--text-primary)" }}>{value}</div>
     </div>
   );
 }

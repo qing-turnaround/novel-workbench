@@ -16,11 +16,18 @@ export default function NavLink({
   return (
     <Link
       href={href}
-      className={`block rounded px-3 py-2 text-sm transition ${
-        isActive
-          ? "bg-blue-600 text-white"
-          : "text-gray-400 hover:bg-gray-800 hover:text-white"
-      }`}
+      className="block rounded-md px-3 py-2 text-sm transition-colors"
+      style={{
+        backgroundColor: isActive ? "var(--bg-sidebar-active)" : "transparent",
+        color: isActive ? "var(--text-primary)" : "var(--text-secondary)",
+        fontWeight: isActive ? 600 : 400,
+      }}
+      onMouseEnter={(e) => {
+        if (!isActive) e.currentTarget.style.backgroundColor = "var(--bg-sidebar-hover)";
+      }}
+      onMouseLeave={(e) => {
+        if (!isActive) e.currentTarget.style.backgroundColor = "transparent";
+      }}
     >
       {children}
     </Link>

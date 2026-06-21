@@ -17,7 +17,7 @@ export default function LoginPage() {
     });
 
     if (res.ok) {
-      router.push("/");
+      window.location.href = "/";
     } else {
       setError("密码错误");
     }
