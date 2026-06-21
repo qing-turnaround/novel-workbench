@@ -10,7 +10,7 @@ export default function ChapterContent({ content }: { content: string }) {
     <article>
       {paragraphs.map((p, i) =>
         p === "——" ? (
-          <div key={i} className="my-10 text-center text-sm" style={{ color: "#bbb" }}>
+          <div key={i} className="my-10 text-center text-sm" style={{ color: "var(--text-muted)" }}>
             * * *
           </div>
         ) : p.startsWith('"') || p.startsWith('“') || p.startsWith('「') ? (
@@ -20,7 +20,7 @@ export default function ChapterContent({ content }: { content: string }) {
               fontSize: "18px",
               lineHeight: 2.2,
               letterSpacing: "0.5px",
-              color: "#3a3630",
+              color: "var(--text-reading)",
               marginBottom: "1.6em",
             }}
           >
@@ -33,7 +33,7 @@ export default function ChapterContent({ content }: { content: string }) {
               fontSize: "18px",
               lineHeight: 2.2,
               letterSpacing: "0.5px",
-              color: "#3a3630",
+              color: "var(--text-reading)",
               textIndent: "2em",
               marginBottom: "1.6em",
             }}

@@ -3,6 +3,7 @@ import { Suspense } from "react";
 import "./globals.css";
 import NavLink from "./nav-link";
 import BookSelector from "./book-selector";
+import ThemeToggle from "./theme-toggle";
 import db from "@/lib/db";
 
 export const metadata: Metadata = {
@@ -46,6 +47,9 @@ export default function RootLayout({
               </li>
             ))}
           </ul>
+          <div className="mt-4 border-t pt-3" style={{ borderColor: "var(--border-color)" }}>
+            <ThemeToggle />
+          </div>
         </nav>
         <main className="ml-48 min-h-screen p-6">{children}</main>
       </body>
